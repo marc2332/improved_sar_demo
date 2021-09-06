@@ -6,7 +6,7 @@ from sardana.macroserver.msexception import UnknownEnv
 _ENV = "_SAR_DEMO"
 
 # Run as single file to load this macro into your MacroServer
-if __name__ == "main":
+if __name__ == "__main__":
     from tango import DeviceProxy
     dev = DeviceProxy("MacroServer/demo2/1")
     dev.put_property({"MacroPath": [getcwd()]})
@@ -198,6 +198,8 @@ def clear_sar_improved_demo(self):
         self.error("No demo has been prepared yet on this sardana!")
         return
 
+    self.unsetEnv(_ENV)
+
     try:
         _ActiveMntGrp = self.getEnv("ActiveMntGrp")
     except UnknownEnv:
@@ -224,7 +226,7 @@ def clear_sar_improved_demo(self):
     for instrument in SAR_DEMO.get("instruments", ()):
         pool.DeleteElement(instrument)
 
-    self.unsetEnv(_ENV)
+    
 
     self.print("DONE!")
 
