@@ -5,12 +5,7 @@ from sardana.macroserver.msexception import UnknownEnv
 
 _ENV = "_SAR_DEMO"
 
-# Run as single file to load this macro into your MacroServer
-if __name__ == "__main__":
-    from tango import DeviceProxy
-    dev = DeviceProxy("MacroServer/demo2/1")
-    dev.put_property({"MacroPath": [getcwd()]})
-
+# Default sar_demo configuration
 default_size = {
     "motors": 4,
     "counter_channels": 4,
@@ -37,7 +32,6 @@ def sar_demo_improved(self, devices):
         return
     except:
         pass
-    
 
     db = PyTango.Database()
 
@@ -50,8 +44,8 @@ def sar_demo_improved(self, devices):
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     ior_ctrl_name = get_free_names(db, "iorctrl", 1)[0]
     
-
     size = default_size.copy()
+
     for dev in devices:
         dev_type = dev[0]
         dev_count = dev[1]
@@ -59,7 +53,6 @@ def sar_demo_improved(self, devices):
     
     for dev_type in default_size:
         dev_count = size[dev_type]
-        self.output("Number of %s is %s", dev_type, dev_count)
 
     motor_names = get_free_names(db, "mot", size["motors"])
     ct_names = get_free_names(db, "ct", size["counter_channels"])
@@ -81,8 +74,6 @@ def sar_demo_improved(self, devices):
     instruments = ["/slit", "/mirror", "/monitor"]
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name], instruments=instruments)
-
-    self.setEnv(_ENV, d)
 
     pools = self.getPools()
     if not len(pools):
@@ -167,7 +158,7 @@ def sar_demo_improved(self, devices):
     self.getMotor(motor_names[3]).setInstrumentName('/mirror')
     self.getCounterTimer(ct_names[0]).setInstrumentName('/monitor')
 
-    
+    self.setEnv(_ENV, d)
 
     self.print("DONE!")
     
@@ -190,16 +181,14 @@ def get_free_names(db, prefix, nb, start_at=1):
     return ret
 
 @macro()
-def clear_sar_improved_demo(self):
+def clear_sar_demo_improved(self):
     """Undoes changes done with sar_demo"""
     try:
         SAR_DEMO = self.getEnv(_ENV)
     except:
         self.error("No demo has been prepared yet on this sardana!")
         return
-
-    self.unsetEnv(_ENV)
-
+   
     try:
         _ActiveMntGrp = self.getEnv("ActiveMntGrp")
     except UnknownEnv:
@@ -226,7 +215,7 @@ def clear_sar_improved_demo(self):
     for instrument in SAR_DEMO.get("instruments", ()):
         pool.DeleteElement(instrument)
 
-    
+    self.unsetEnv(_ENV)
 
     self.print("DONE!")
 
