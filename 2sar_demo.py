@@ -8,12 +8,12 @@ _ENV = "_SAR_DEMO"
 # Default sar_demo configuration
 default_size = {
     "motors": 4,
-    "counter_channels": 4,
-    "0D_channels": 4,
-    "1D_channels": 1,
-    "2D_channels": 1,
-    "trigger_elements": 1,
-    "ior_registers": 2
+    "ctexpchannel": 4,
+    "zerodexpchannel": 4,
+    "onedexpchannel": 1,
+    "twodexpchannel": 1,
+    "triggergate": 1,
+    "iorregister": 2
 }
 
 @macro([ 
@@ -47,22 +47,25 @@ def sar_demo_improved(self, devices):
     size = default_size.copy()
 
     for dev in devices:
-        dev_type = dev[0]
+        dev_type = dev[0].lower() 
         dev_count = dev[1]
-        size[dev_type] = dev_count;
+        print(0)
+        print(size, dev_type, hasattr(size,dev_type))
+        if dev_type in size:
+            size[dev_type] = dev_count;
+        else:
+            self.error("Element type '" + dev_type + "' is not recognised")
+            return
     
-    for dev_type in default_size:
-        dev_count = size[dev_type]
-
     motor_names = get_free_names(db, "mot", size["motors"])
-    ct_names = get_free_names(db, "ct", size["counter_channels"])
-    zerod_names = get_free_names(db, "zerod", size["0D_channels"])
-    oned_names = get_free_names(db, "oned", size["1D_channels"])
-    twod_names = get_free_names(db, "twod", size["2D_channels"])
-    tg_names = get_free_names(db, "tg", size["trigger_elements"])
+    ct_names = get_free_names(db, "ct", size["ctexpchannel"])
+    zerod_names = get_free_names(db, "zerod", size["zerodexpchannel"])
+    oned_names = get_free_names(db, "oned", size["onedexpchannel"])
+    twod_names = get_free_names(db, "twod", size["twodexpchannel"])
+    tg_names = get_free_names(db, "tg", size["triggergate"])
     gap, offset = get_free_names(db, "gap", 1) + \
         get_free_names(db, "offset", 1)
-    ior_names = get_free_names(db, "ior", size["ior_registers"])
+    ior_names = get_free_names(db, "ior", size["iorregister"])
     mg_name = get_free_names(db, "mntgrp", 1)[0]
 
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
